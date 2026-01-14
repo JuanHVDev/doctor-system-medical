@@ -1,8 +1,9 @@
-import { 
-  Calendar, 
-  Shield, 
-  Smartphone, 
-  Clock, 
+import
+{
+  Calendar,
+  Shield,
+  Smartphone,
+  Clock,
   Heart,
   Lock,
   FileCheck,
@@ -16,8 +17,7 @@ import { slideInLeft, fadeInUp, slideInRight } from "./animations"
 export const heroData = {
   title: "Citas Médicas Simples y Seguras",
   subtitle: "Gestione sus citas médicas con facilidad. Plataforma moderna y segura para pacientes y doctores.",
-  primaryCTA: "Registrarse como Paciente",
-  secondaryCTA: "Soy Doctor",
+  primaryCTA: "Registrarse",
   trustBadges: [
     { icon: Shield, text: "100% Seguro", color: "text-green-600" },
     { icon: Lock, text: "HIPAA Cumple", color: "text-blue-600" },

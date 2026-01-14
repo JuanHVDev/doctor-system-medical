@@ -11,7 +11,7 @@ import Link from "next/link"
 export function HeroSection()
 {
   return (
-    <section  className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 relative overflow-hidden">
+    <section className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 relative overflow-hidden">
       {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
@@ -92,11 +92,6 @@ export function HeroSection()
                 <Button size="lg" className="text-lg px-8 py-6 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 transform hover:scale-105 transition-all duration-300 shadow-lg">
                   {heroData.primaryCTA}
                   <ChevronRight className="ml-2 w-5 h-5" />
-                </Button>
-              </Link>
-              <Link href="/register/doctor">
-                <Button variant="outline" size="lg" className="text-lg px-8 py-6 border-2 transform hover:scale-105 transition-all duration-300">
-                  {heroData.secondaryCTA}
                 </Button>
               </Link>
             </motion.div>

@@ -72,25 +72,8 @@ export function FinalCTASection()
               <Link href="/register">
                 <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 text-lg px-8 py-4 font-semibold shadow-xl">
                   <Users className="mr-2 w-5 h-5" />
-                  Registrarse como Paciente
+                  Registrarse
                   <ChevronRight className="ml-2 w-5 h-5" />
-                </Button>
-              </Link>
-            </motion.div>
-
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Link href="/register/doctor" className="flex items-center gap-2">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="border-2 border-white hover:bg-white text-blue-600 hover:text-blue-600 text-lg px-8 py-4 font-semibold"
-                >
-
-                  <Stethoscope className="mr-2 w-5 h-5" />
-                  Soy Profesional
                 </Button>
               </Link>
             </motion.div>

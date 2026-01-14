@@ -52,10 +52,10 @@ export function Navigation()
 
           {/* Desktop CTA Buttons */}
           <div className="hidden md:flex items-center gap-4">
-            <Link href="/register/doctor">
+            <Link href="/login">
               <Button variant="ghost" size="sm" className="flex items-center gap-2">
                 <Shield className="w-4 h-4" />
-                Soy Doctor
+                Login
               </Button>
             </Link>
             <Link href="/register">
@@ -115,14 +115,18 @@ export function Navigation()
                 Testimonios
               </Link>
               <div className="pt-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
-                <Button variant="ghost" className="w-full justify-start" onClick={() => setIsOpen(false)}>
-                  <Shield className="w-4 h-4 mr-2" />
-                  Soy Doctor
-                </Button>
-                <Button className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700" onClick={() => setIsOpen(false)}>
-                  <User className="w-4 h-4 mr-2" />
-                  Registrarse
-                </Button>
+                <Link href="/login">
+                  <Button variant="ghost" className="w-full justify-start" onClick={() => setIsOpen(false)}>
+                    <Shield className="w-4 h-4 mr-2" />
+                    Login
+                  </Button>
+                </Link>
+                <Link href="/register">
+                  <Button className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700" onClick={() => setIsOpen(false)}>
+                    <User className="w-4 h-4 mr-2" />
+                    Registrarse
+                  </Button>
+                </Link>
               </div>
             </div>
           </motion.div>

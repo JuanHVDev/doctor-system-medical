@@ -4,96 +4,91 @@ Este archivo contiene directrices y comandos para agentes de codificación que t
 
 ## Descripción del Proyecto
 
-Este es un sistema médico para doctores construido con Next.js 16 que utiliza:
-- TypeScript con modo estricto
-- Tailwind CSS v4 con configuración de tema inline
-- React 19 con RSC (React Server Components)
-- App Router architecture
-- Autenticación con better-auth
-- Manejo de estado con Zustand
-- Formularios con react-hook-form + validación Zod
-- Componentes Shadcn/UI con estilo New York
+Sistema médico para doctores construido con Next.js 16, TypeScript estricto, Tailwind CSS v4, React 19 RSC, better-auth, Zustand, react-hook-form + Zod, y componentes Shadcn/UI estilo New York.
 
 ## Comandos de Desarrollo
 
-### Comandos Principales
+### Build/Lint/Test Commands
 ```bash
-npm run dev          # Iniciar servidor de desarrollo (localhost:3000)
-npm run build        # Compilar para producción
-npm run start        # Iniciar servidor de producción
-npm run lint         # Ejecutar ESLint
+npm run dev              # Servidor desarrollo (localhost:3000)
+npm run build            # Compilar para producción
+npm run start            # Servidor producción
+npm run lint             # Ejecutar ESLint
+npm run db:push          # Push Prisma schema a DB
+npm run db:generate      # Generar Prisma client
+npm run postinstall      # Post-install (genera Prisma)
 ```
 
-### Comandos de Pruebas
-Actualmente no hay un framework de pruebas configurado. Al agregar pruebas:
-- Configurar Jest o Vitest con TypeScript
-- Agregar scripts de prueba al package.json
-- Seguir convenciones de Next.js para testing
-- Comando para prueba individual: `npm test -- --testNamePattern="nombre-prueba"`
+### Testing
+Actualmente sin framework configurado. Para agregar pruebas:
+- Configurar Jest/Vitest con TypeScript
+- Agregar scripts al package.json
+- Prueba individual: `npm test -- --testNamePattern="nombre-prueba"`
 
-## Directrices de Estilo de Código
+## Directrices de Estilo
 
-### Configuración TypeScript
-- Modo estricto habilitado
-- Target ES2017, transform React JSX
-- Path aliases: `@/*` mapea a `./*`
-- Configuración en tsconfig.json
-
-### Organización de Importaciones
+### Estructura de Importaciones
 ```typescript
-// 1. Importaciones de tipos
+// 1. Tipos
 import type { Metadata } from "next";
 
-// 2. Importaciones de React/Next.js
-import { useState, useEffect } from "react";
+// 2. React/Next.js  
+import { useState } from "react";
 import Image from "next/image";
 
-// 3. Librerías de terceros
+// 3. Terceros
 import { z } from "zod";
 import { motion } from "motion";
 import { clsx, type ClassValue } from "clsx";
 
-// 4. Importaciones internas (usando path aliases)
+// 4. Internos (@/* path alias)
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 ```
 
-### Estructura de Componentes
+### Componentes
 ```typescript
-// Definir interfaces de props
 interface ComponentProps {
   title: string;
   onSubmit: (data: FormData) => void;
 }
 
-// Export default con tipado adecuado
 export default function Component({
   title,
   onSubmit
 }: ComponentProps): JSX.Element {
-  // Lógica del componente
   return <div>{title}</div>;
 }
 ```
 
-### Convenciones de Nomenclatura
-- **Componentes**: PascalCase (ej: `UserProfile`, `LoginForm`)
-- **Archivos**: kebab-case para utilidades (ej: `user-service.ts`), PascalCase para componentes (ej: `UserProfile.tsx`)
-- **Variables**: camelCase (ej: `userName`, `isLoading`)
-- **Constantes**: UPPER_SNAKE_CASE (ej: `API_BASE_URL`)
-- **Hooks**: camelCase con prefijo `use` (ej: `useAuth`, `useFormState`)
+### Nomenclatura
+- **Componentes**: PascalCase (`UserProfile`, `LoginForm`)
+- **Archivos**: kebab-case utilidades (`user-service.ts`), PascalCase componentes (`UserProfile.tsx`)
+- **Variables**: camelCase (`userName`, `isLoading`)
+- **Constantes**: UPPER_SNAKE_CASE (`API_BASE_URL`)
+- **Hooks**: camelCase con `use` (`useAuth`, `useFormState`)
 
-### Directrices de Estilos
-- Usar clases de Tailwind CSS
-- Seguir estructura de tema con propiedades CSS personalizadas
-- Usar directiva `@theme inline` para valores de tema personalizados
-- Usar elementos HTML semánticos
-- Configuración en globals.css con OKLCH color space
+### Formatos y Estilos
+- Tailwind CSS con tema inline (`@theme inline` en globals.css)
+- OKLCH color space para temas claro/oscuro
+- Componentes Shadcn/UI para UI consistente
+- HTML semántico con accesibilidad ARIA
+- Server Components para datos estáticos cuando sea posible
+
+### Formularios
+- react-hook-form con validación Zod
+- Controller pattern para componentes controlados
+- Manejo de estados de carga y errores
+- Tipado TypeScript para datos del formulario
+
+### Estado y Datos
+- Zustand para estado global
+- Estado local para componentes simples
+- Prisma ORM con PostgreSQL
+- better-auth para autenticación
 
 ### Manejo de Errores
 ```typescript
-// Usar error boundaries y bloques try-catch
 try {
   const result = await apiCall();
   return result;
@@ -103,71 +98,48 @@ try {
 }
 ```
 
-### Manejo de Formularios
-- Usar react-hook-form con schemas Zod para validación
-- Implementar tipos TypeScript adecuados para datos del formulario
-- Manejar estados de carga y errores apropiadamente
-- Usar componentes Shadcn/UI para formularios
-
-### Manejo de Estado
-- Usar Zustand para estado global
-- Mantener estado local cuando sea posible
-- Seguir mejores prácticas de React para actualizaciones de estado
-- Considerar Server Components para datos estáticos
-
-### Organización de Archivos
+### Estructura de Archivos
 ```
 app/
-├── layout.tsx
-├── page.tsx
-├── globals.css
+├── layout.tsx          # Root layout con metadata
+├── page.tsx           # Home page
+├── globals.css        # Tailwind + tema inline
+├── (auth)/            # Route group auth
 components/
-├── ui/              # Componentes Shadcn/UI
-├── forms/           # Componentes de formulario
-├── hooks/           # Hooks personalizados
+├── ui/                # Shadcn/UI components
+├── auth/              # Auth components
+├── landing/           # Landing page components
 lib/
-├── utils.ts         # Utilidades generales
-├── auth.ts          # Configuración better-auth
-types/               # Definiciones de tipos
+├── utils.ts           # cn() utility
+├── auth.ts            # better-auth config
+├── prisma.ts          # Prisma client
+├── auth-client.ts     # Client auth config
 ```
 
-### Configuración ESLint
-- Usa configuración recomendada de Next.js
-- Reglas Core Web Vitals habilitadas
-- Reglas TypeScript forzadas
-- Ignora salidas de compilación
-- Configuración en `eslint.config.mjs` con globalIgnores
+### Configuraciones Clave
+- **TypeScript**: strict mode, target ES2017, `@/*` path alias
+- **ESLint**: Next.js core-web-vitals + TypeScript
+- **Tailwind**: v4 con tema inline, OKLCH colors
+- **Prisma**: PostgreSQL con generated client
 
-### Consideraciones de Performance
-- Usar componente Image de Next.js para optimización
-- Implementar estados de carga apropiados
-- Considerar code splitting para componentes grandes
-- Usar React.memo para componentes costosos
+### Seguridad
+- Validación Zod para todas las entradas
+- better-auth para autenticación segura
+- Sin datos sensibles en cliente
+- Privacidad HIPAA para datos médicos
 
-### Mejores Prácticas de Seguridad
-- Validar todas las entradas de usuario con schemas Zod
-- Usar better-auth para autenticación
-- Nunca exponer datos sensibles en código cliente
-- Implementar protección CSRF apropiada
+## Flujo de Trabajo
 
-## Flujo de Trabajo de Desarrollo
-
-1. **Antes de empezar**: Ejecutar `npm run lint` para asegurar calidad de código
-2. **Durante desarrollo**: Usar `npm run dev` para hot reloading
-3. **Antes de commitear**: Ejecutar `npm run lint` y `npm run build`
-4. **Pruebas**: Agregar pruebas para nuevas funcionalidades
+1. **Antes de empezar**: `npm run lint`
+2. **Desarrollo**: `npm run dev` 
+3. **Pre-commit**: `npm run lint && npm run build`
+4. **Database**: `npm run db:push` para cambios schema
 
 ## Notas para Agentes
 
-- Este es un sistema médico/doctors - asegurar cumplimiento HIPAA y privacidad de datos
-- Todos los datos de usuario deben ser validados y asegurados
-- Seguir guías de accesibilidad (etiquetas ARIA, HTML semántico)
-- Implementar manejo de errores apropiado para todas las llamadas API
-- Usar TypeScript estrictamente - sin tipos `any` a menos que sea absolutamente necesario
-- Seguir patrones y mejores prácticas de React 19
-- Aprovechar características de Next.js 16 apropiadamente
-- Usar componentes Shadcn/UI
-- Usar Tailwind CSS para estilos
-- Usar Zustand para manejo de estado
-- Responder en español y crear todo en español
-- Cada vez que hagas una implementación, crea una rama nueva con el nombre de la implementación y ahí realiza la implementación
+- Sistema médico - cumplimiento HIPAA y privacidad de datos crítico
+- Todo en español - UI, mensajes, documentación
+- TypeScript estricto - evitar `any`
+- React 19 + Next.js 16 patterns
+- Crear branch nueva para cada implementación
+- Component Shadcn/UI existentes优先

@@ -38,7 +38,12 @@ export default function RegisterForm()
   })
   const onSubmit = (data: z.infer<typeof registerSchema>) =>
   {
-    console.log(data)
+    const userValidated = registerSchema.safeParse(data)
+    console.log(userValidated)
+    if (!userValidated.success)
+    {
+      return
+    }
   }
 
   return (

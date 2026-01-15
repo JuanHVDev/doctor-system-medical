@@ -1,0 +1,238 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  PACIENTE
+  DOCTOR
+  NURSE
+  ADMIN
+  RECEPTIONIST
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+enum BloodType {
+  A_POSITIVE
+  A_NEGATIVE
+  B_POSITIVE
+  B_NEGATIVE
+  AB_POSITIVE
+  AB_NEGATIVE
+  O_POSITIVE
+  O_NEGATIVE
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  CHECKED_IN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum AppointmentType {
+  ROUTINE_CHECKUP
+  FOLLOW_UP
+  URGENT
+  SPECIALIST_REFERRAL
+  VACCINATION
+  LAB_RESULTS
+}
+
+model User {
+  id             String    @id
+  name           String
+  email          String
+  emailVerified  Boolean   @default(false)
+  image          String?
+  role           UserRole  @default(PACIENTE)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  sessions       Session[]
+  accounts       Account[]
+  isActive       Boolean   @default(true)
+  patientProfile Patient?
+  doctorProfile  Doctor?
+
+  @@unique([email])
+  @@map("user")
+}
+
+model Patient {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Demographics
+  firstName   String
+  lastName    String
+  dateOfBirth DateTime
+  gender      Gender
+  phoneNumber String?
+  address     String?
+  city        String?
+  state       String?
+  zipCode     String?
+  country     String   @default("US")
+
+  // Medical information
+  bloodType      BloodType?
+  allergies      String? // Array of allergies as JSON string
+  medicalHistory String?
+  height         Float? // in cm
+  weight         Float? // in kg
+
+  // Emergency contact
+  emergencyContactName     String?
+  emergencyContactPhone    String?
+  emergencyContactRelation String?
+
+  // Insurance
+  primaryInsurance      String?
+  insurancePolicyNumber String?
+  insuranceGroupNumber  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  appointments Appointment[]
+
+  @@map("patients")
+}
+
+model Doctor {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Professional info
+  firstName       String
+  lastName        String
+  specialization  String
+  licenseNumber   String  @unique
+  npiNumber       String? @unique // National Provider Identifier
+  yearsExperience Int?
+
+  // Contact
+  phoneNumber    String?
+  officeLocation String?
+  department     String?
+
+  // Schedule
+  availableDays String[] // ["Monday", "Tuesday", etc]
+  startTime     String // "09:00"
+  endTime       String // "17:00"
+
+  // Status
+  isActive            Boolean @default(true)
+  isAcceptingPatients Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  appointments Appointment[]
+
+  @@map("doctors")
+}
+
+model Appointment {
+  id        String  @id @default(cuid())
+  patientId String
+  patient   Patient @relation(fields: [patientId], references: [id])
+  doctorId  String
+  doctor    Doctor  @relation(fields: [doctorId], references: [id])
+
+  // Scheduling
+  startTime DateTime
+  endTime   DateTime
+  duration  Int // in minutes
+  status    AppointmentStatus @default(SCHEDULED)
+
+  // Visit details
+  appointmentType AppointmentType
+  reason          String?
+  notes           String?
+
+  // Reminders
+  reminderSent Boolean   @default(false)
+  reminderTime DateTime?
+
+  // Check-in
+  checkedIn   Boolean   @default(false)
+  checkInTime DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("appointments")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}

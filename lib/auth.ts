@@ -9,6 +9,41 @@ export const auth = betterAuth({
     provider: "postgresql", // or "mysql", "postgresql", ...etc
   }),
   emailAndPassword: {
-    enabled: true
-  }
+    enabled: true,
+  },
+  user: {
+    additionalFields: {
+      role: {
+        type: "string",
+        defaultValue: "PATIENT",
+        input: true,
+      },
+    },
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        after: async (user) =>
+        {
+          if (user.role === "PATIENT")
+          {
+            await prisma.patient.create({
+              data: {
+                userId: user.id,
+                fullName: user.name,
+              },
+            });
+          } else if (user.role === "DOCTOR")
+          {
+            await prisma.doctor.create({
+              data: {
+                userId: user.id,
+                fullName: user.name,
+              },
+            });
+          }
+        },
+      },
+    },
+  },
 });

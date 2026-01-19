@@ -40,7 +40,7 @@ export default function Home()
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-linear-to-br dark:from-blue-600 dark:to-cyan-600 from-blue-600 to-cyan-600 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold">M</span>
                 </div>
                 <span className="text-xl font-bold">MedApp</span>

@@ -15,6 +15,7 @@ datasource db {
 }
 
 enum UserRole {
+  PATIENT
   PACIENTE
   DOCTOR
   NURSE
@@ -60,12 +61,13 @@ enum AppointmentType {
 }
 
 model User {
-  id             String    @id
+  id             String    @id @default(cuid())
   name           String
   email          String
   emailVerified  Boolean   @default(false)
   image          String?
-  role           UserRole  @default(PACIENTE)
+  password       String?
+  role           UserRole  @default(PATIENT)
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   sessions       Session[]
@@ -84,16 +86,15 @@ model Patient {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Demographics
-  firstName   String
-  lastName    String
-  dateOfBirth DateTime
-  gender      Gender
+  fullName    String
+  dateOfBirth DateTime?
+  gender      Gender?
   phoneNumber String?
   address     String?
   city        String?
   state       String?
   zipCode     String?
-  country     String   @default("US")
+  country     String    @default("US")
 
   // Medical information
   bloodType      BloodType?
@@ -127,10 +128,9 @@ model Doctor {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Professional info
-  firstName       String
-  lastName        String
-  specialization  String
-  licenseNumber   String  @unique
+  fullName        String
+  specialization  String?
+  licenseNumber   String? @unique
   npiNumber       String? @unique // National Provider Identifier
   yearsExperience Int?
 
@@ -141,8 +141,8 @@ model Doctor {
 
   // Schedule
   availableDays String[] // ["Monday", "Tuesday", etc]
-  startTime     String // "09:00"
-  endTime       String // "17:00"
+  startTime     String? // "09:00"
+  endTime       String? // "17:00"
 
   // Status
   isActive            Boolean @default(true)

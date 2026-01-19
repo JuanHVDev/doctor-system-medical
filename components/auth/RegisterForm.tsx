@@ -9,10 +9,14 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Loader2 } from "lucide-react";
 
-type userType = "doctor" | "paciente"
+import { signUp } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+
+type userType = "doctor" | "patient"
 
 const registerSchema = z.object({
-  userType: z.enum(["doctor", "paciente"]),
+  userType: z.enum(["doctor", "patient"]),
   fullName: z.string().min(3, "El nombre debe de ser completo"),
   email: z.string().min(1, "El correo electrónico es obligatorio").email("Formato de correo invalido"),
   password: z.string().min(8, "La contraseña debe de tener al menos 8 caracteres"),
@@ -26,23 +30,51 @@ type RegisterSchema = z.infer<typeof registerSchema>
 
 export default function RegisterForm()
 {
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+
   const form = useForm<RegisterSchema>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      userType: "paciente",
+      userType: "patient",
       fullName: "",
       email: "",
       password: "",
       confirmPassword: "",
     }
   })
-  const onSubmit = (data: z.infer<typeof registerSchema>) =>
+  const onSubmit = async (data: RegisterSchema) =>
   {
-    const userValidated = registerSchema.safeParse(data)
-    console.log(userValidated)
-    if (!userValidated.success)
+    setError(null);
+    const { email, password, fullName, userType } = data;
+
+    const { data: res, error: authError } = await signUp.email({
+      email,
+      password,
+      name: fullName,
+      // @ts-ignore
+      role: userType.toUpperCase(),
+      callbackURL: "/",
+    }, {
+      onRequest: () =>
+      {
+        // Option to show loading state if not already handled by form
+
+      },
+      onSuccess: async () =>
+      {
+        form.reset();
+        router.push("/login");
+      },
+      onError: (ctx) =>
+      {
+        setError(ctx.error.message || "Ocurrió un error inesperado");
+      }
+    });
+
+    if (authError)
     {
-      return
+      console.error(authError);
     }
   }
 
@@ -58,6 +90,11 @@ export default function RegisterForm()
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-sm">
+              {error}
+            </div>
+          )}
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-2">
               <FieldGroup>
@@ -77,7 +114,7 @@ export default function RegisterForm()
                           <SelectItem value="doctor">
                             Doctor
                           </SelectItem>
-                          <SelectItem value="paciente">
+                          <SelectItem value="patient">
                             Paciente
                           </SelectItem>
                         </SelectContent>

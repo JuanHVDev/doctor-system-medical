@@ -103,7 +103,7 @@ export default function RegisterForm()
                   control={form.control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel>
+                      <FieldLabel htmlFor="userType">
                         Tipo de Usuario
                       </FieldLabel>
                       <Select name={field.name} value={field.value} onValueChange={field.onChange} defaultValue={field.value}>
@@ -132,7 +132,7 @@ export default function RegisterForm()
                   control={form.control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel>
+                      <FieldLabel htmlFor="fullName">
                         Nombre Completo
                       </FieldLabel>
                       <Input
@@ -155,7 +155,7 @@ export default function RegisterForm()
                   control={form.control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel>
+                      <FieldLabel htmlFor="email">
                         Correo Electronico
                       </FieldLabel>
                       <Input
@@ -178,7 +178,7 @@ export default function RegisterForm()
                   control={form.control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel>
+                      <FieldLabel htmlFor="password">
                         Contraseña
                       </FieldLabel>
                       <Input
@@ -201,7 +201,7 @@ export default function RegisterForm()
                   control={form.control}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <FieldLabel>
+                      <FieldLabel htmlFor="confirmPassword">
                         Confirmar Contraseña
                       </FieldLabel>
                       <Input

@@ -1,11 +1,15 @@
-import { auth } from "@/lib/auth";
 import { type NextRequest, NextResponse } from "next/server";
 
 export default async function middleware(request: NextRequest)
 {
-  const session = await auth.api.getSession({
-    headers: request.headers,
+  // Use fetch to avoid importing the auth object which pulls in Prisma (not Edge compatible)
+  const sessionResponse = await fetch(`${request.nextUrl.origin}/api/auth/get-session`, {
+    headers: {
+      cookie: request.headers.get("cookie") || "",
+    },
   });
+
+  const session = await sessionResponse.json();
 
   const { pathname } = request.nextUrl;
 

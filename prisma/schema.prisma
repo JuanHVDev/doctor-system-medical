@@ -117,7 +117,9 @@ model Patient {
   updatedAt DateTime @updatedAt
 
   // Relationships
-  appointments Appointment[]
+  appointments   Appointment[]
+  medicalRecords MedicalRecord[]
+  labResults     LabResult[]
 
   @@map("patients")
 }
@@ -152,7 +154,8 @@ model Doctor {
   updatedAt DateTime @updatedAt
 
   // Relationships
-  appointments Appointment[]
+  appointments   Appointment[]
+  medicalRecords MedicalRecord[]
 
   @@map("doctors")
 }
@@ -187,6 +190,61 @@ model Appointment {
   updatedAt DateTime @updatedAt
 
   @@map("appointments")
+}
+
+model MedicalRecord {
+  id        String  @id @default(cuid())
+  patientId String
+  patient   Patient @relation(fields: [patientId], references: [id])
+  doctorId  String
+  doctor    Doctor  @relation(fields: [doctorId], references: [id])
+
+  diagnosis String
+  treatment String?
+  notes     String?
+  date      DateTime @default(now())
+
+  prescriptions Prescription[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("medical_records")
+}
+
+model Prescription {
+  id              String        @id @default(cuid())
+  medicalRecordId String
+  medicalRecord   MedicalRecord @relation(fields: [medicalRecordId], references: [id], onDelete: Cascade)
+
+  medication   String
+  dosage       String
+  frequency    String
+  duration     String?
+  instructions String?
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("prescriptions")
+}
+
+model LabResult {
+  id        String  @id @default(cuid())
+  patientId String
+  patient   Patient @relation(fields: [patientId], references: [id])
+
+  testName      String
+  result        String?
+  category      String? // e.g., "Blood Work", "Imaging"
+  date          DateTime
+  attachmentUrl String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("lab_results")
 }
 
 model Session {

@@ -5,7 +5,10 @@ import { prisma } from "@/lib/prisma";
 import { PatientStats } from "@/components/dashboard/PatientStats";
 import { PatientProfile } from "@/components/dashboard/PatientProfile";
 import { UpcomingAppointments } from "@/components/dashboard/UpcomingAppointments";
-import { Bell, Search, Settings, HelpCircle } from "lucide-react";
+import { QuickActions } from "@/components/dashboard/QuickActions";
+import { HealthSummary } from "@/components/dashboard/HealthSummary";
+import { RecentActivity } from "@/components/dashboard/RecentActivity";
+import { Bell, Search, Settings, HelpCircle, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -31,24 +34,18 @@ export default async function PacientePage()
     where: { userId: session.user.id },
     include: {
       appointments: {
-        where: {
-          startTime: { gte: new Date() },
-          status: { in: ["SCHEDULED", "CONFIRMED"] }
-        },
         include: {
           doctor: true
         },
         orderBy: {
-          startTime: "asc"
-        },
-        take: 5
+          startTime: "desc"
+        }
       }
     }
   });
 
   if (!patientData)
   {
-    // This shouldn't happen if databaseHooks are working, but just in case
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-4">
         <h1 className="text-2xl font-bold">Perfil no encontrado</h1>
@@ -60,81 +57,124 @@ export default async function PacientePage()
     );
   }
 
-  // Fetch counts for stats
-  const allAppointmentsCount = await prisma.appointment.count({
-    where: { patientId: patientData.id }
-  });
+  // Derived stats
+  const upcomingAppointments = patientData.appointments.filter(app =>
+    new Date(app.startTime) >= new Date() && ["SCHEDULED", "CONFIRMED"].includes(app.status)
+  ).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
 
-  const completedAppointmentsCount = await prisma.appointment.count({
-    where: {
-      patientId: patientData.id,
-      status: "COMPLETED"
-    }
-  });
+  const completedCount = patientData.appointments.filter(app => app.status === "COMPLETED").length;
+  const totalCount = patientData.appointments.length;
 
-  const upcomingCount = await prisma.appointment.count({
-    where: {
-      patientId: patientData.id,
-      startTime: { gte: new Date() },
-      status: { in: ["SCHEDULED", "CONFIRMED"] }
-    }
-  });
+  // Recent activity mapping
+  const activities: { id: string; type: 'APPOINTMENT' | 'MEDICAL_RECORD' | 'PROFILE_UPDATE'; title: string; description: string; date: Date }[] = patientData.appointments.slice(0, 5).map(app => ({
+    id: app.id,
+    type: 'APPOINTMENT' as const,
+    title: `Cita con ${app.doctor.fullName}`,
+    description: `${app.appointmentType.replace(/_/g, ' ')} - ${app.status}`,
+    date: app.startTime,
+  }));
+
+  if (patientData.updatedAt)
+  {
+    activities.push({
+      id: 'profile-update',
+      type: 'PROFILE_UPDATE' as const,
+      title: 'Perfil Actualizado',
+      description: 'Se realizaron cambios en tu información personal.',
+      date: patientData.updatedAt
+    });
+  }
+
+  activities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   return (
-    <div className="min-h-screen bg-muted/30 dark:bg-background">
-      {/* Dashboard Top Navigation */}
-      <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
-        <div className="flex items-center gap-2 font-bold text-xl">
-          <span className="text-primary font-black italic">AG</span>
-          <span>Health</span>
-        </div>
-        <div className="ml-auto flex items-center gap-4 md:gap-8">
-          <form className="hidden lg:flex relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Buscar médicos, citas..."
-              className="w-72 pl-8 bg-muted/50 border-none focus-visible:ring-1"
-            />
-          </form>
+    <div className="min-h-screen bg-muted/40 dark:bg-background/95">
+      {/* Dashboard Header */}
+      <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-md">
+        <div className="container flex h-16 items-center justify-between px-4 md:px-8">
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-2 right-2 flex h-2 w-2 rounded-full bg-primary ring-2 ring-background"></span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <Activity className="h-5 w-5" />
+            </div>
+            <span className="text-xl font-bold tracking-tight">AG Health</span>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="hidden md:flex relative group">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+              <Input
+                type="search"
+                placeholder="Buscar..."
+                className="w-64 pl-8 bg-muted/50 border-none focus-visible:ring-2 focus-visible:ring-primary/20"
+              />
+            </div>
+            <Button variant="ghost" size="icon" className="relative group">
+              <Bell className="h-5 w-5 group-hover:text-primary transition-colors" />
+              <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-background"></span>
             </Button>
             <Button variant="ghost" size="icon">
               <Settings className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon">
-              <HelpCircle className="h-5 w-5" />
             </Button>
           </div>
         </div>
       </header>
 
-      <main className="p-4 md:p-8 space-y-8 max-w-7xl mx-auto">
-        {/* Welcome Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Hola, {session.user.name} 👋</h1>
-            <p className="text-muted-foreground">Bienvenido de nuevo a tu panel médico. Aquí tienes un resumen de tu salud.</p>
+      <main className="container p-4 md:p-8 space-y-8 max-w-7xl mx-auto">
+        {/* Welcome and Summary Section */}
+        <section className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+            <div>
+              <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">
+                Hola, {session.user.name}
+              </h1>
+              <p className="text-lg text-muted-foreground mt-2">
+                Bienvenido a tu centro de salud digital.
+              </p>
+            </div>
           </div>
-          <Button className="w-full md:w-auto shadow-lg shadow-primary/20">
-            Nueva Cita
-          </Button>
-        </div>
 
-        {/* Stats Grid */}
-        <PatientStats
-          totalAppointments={allAppointmentsCount}
-          completedAppointments={completedAppointmentsCount}
-          upcomingAppointments={upcomingCount}
-        />
+          <PatientStats
+            totalAppointments={totalCount}
+            completedAppointments={completedCount}
+            upcomingAppointments={upcomingAppointments.length}
+          />
+        </section>
 
-        {/* Main Content Areas */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Profile Section */}
-          <div className="lg:col-span-1">
+        {/* Dashboard Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+          {/* Main Column */}
+          <div className="lg:col-span-8 space-y-8">
+            {/* Quick Actions */}
+            <QuickActions />
+
+            {/* Upcoming Appointments */}
+            <UpcomingAppointments
+              appointments={upcomingAppointments.slice(0, 3).map(app => ({
+                id: app.id,
+                startTime: app.startTime,
+                status: app.status,
+                doctor: {
+                  fullName: app.doctor.fullName,
+                  specialization: app.doctor.specialization
+                }
+              }))}
+            />
+
+            {/* Recent Activity */}
+            <RecentActivity activities={activities.slice(0, 5)} />
+          </div>
+
+          {/* Sidebar Column */}
+          <div className="lg:col-span-4 space-y-8">
+            {/* Health Indicators */}
+            <HealthSummary
+              bloodType={patientData.bloodType}
+              weight={patientData.weight}
+              height={patientData.height}
+            />
+
+            {/* Personal Profile Summary */}
             <PatientProfile
               patient={{
                 fullName: patientData.fullName,
@@ -147,21 +187,6 @@ export default async function PacientePage()
                 city: patientData.city,
                 dateOfBirth: patientData.dateOfBirth
               }}
-            />
-          </div>
-
-          {/* Appointments Section */}
-          <div className="lg:col-span-2">
-            <UpcomingAppointments
-              appointments={patientData.appointments.map(app => ({
-                id: app.id,
-                startTime: app.startTime,
-                status: app.status,
-                doctor: {
-                  fullName: app.doctor.fullName,
-                  specialization: app.doctor.specialization
-                }
-              }))}
             />
           </div>
         </div>

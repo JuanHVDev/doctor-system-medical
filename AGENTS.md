@@ -20,10 +20,19 @@ npm run postinstall      # Post-install (genera Prisma)
 ```
 
 ### Testing
-Actualmente sin framework configurado. Para agregar pruebas:
-- Configurar Jest/Vitest con TypeScript
-- Agregar scripts al package.json
-- Prueba individual: `npm test -- --testNamePattern="nombre-prueba"`
+El proyecto usa Vitest con configuración personalizada:
+```bash
+npm test                 # Ejecutar todos los tests
+npm test -- --run        # Ejecutar tests una sola vez (sin watch mode)
+npm test -- ui           # Ejecutar con UI de Vitest
+npm test -- --coverage   # Ejecutar con cobertura de código
+```
+
+Para prueba individual:
+```bash
+npm test -- LoginForm.test.tsx                    # Prueba específica
+npm test -- --reporter=verbose LoginForm.test.tsx # Con output detallado
+```
 
 ## Directrices de Estilo
 

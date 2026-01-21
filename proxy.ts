@@ -1,58 +1,93 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { getSessionCookie } from "better-auth/cookies";
 
 export default async function middleware(request: NextRequest)
 {
-  // Use fetch to avoid importing the auth object which pulls in Prisma (not Edge compatible)
-  const sessionResponse = await fetch(`${request.nextUrl.origin}/api/auth/get-session`, {
-    headers: {
-      cookie: request.headers.get("cookie") || "",
-    },
-  });
-
-  const session = await sessionResponse.json();
+  const sessionCookie = getSessionCookie(request);
 
   const { pathname } = request.nextUrl;
 
-  // 1. If the user is NOT authenticated
-  if (!session)
+  // Define protected routes
+  const isProtectedRoute = pathname.startsWith("/doctor") || pathname.startsWith("/paciente") || pathname === "/dashboard";
+  const isAuthRoute = pathname.startsWith("/login") || pathname.startsWith("/register");
+
+  if (!sessionCookie && isProtectedRoute)
   {
-    // Prevent access to protected routes
-    if (pathname.startsWith("/doctor") || pathname.startsWith("/paciente"))
-    {
-      return NextResponse.redirect(new URL("/login", request.url));
-    }
-    // Allow access to login/register/public pages
-    return NextResponse.next();
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // 2. If the user IS authenticated
-  const role = session.user.role;
-
-  // Prevent authenticated users from accessing auth pages
-  if (pathname.startsWith("/login") || pathname.startsWith("/register"))
+  if (sessionCookie)
   {
-    if (role === "DOCTOR")
+    // We need to fetch the full session to check the role for more granular protection
+    // Better-auth recommends using the API for this in middleware if needed, 
+    // or just checking the presence of the cookie for basic protection.
+    // For role-based redirection, we might need a call to the session API.
+
+    try
     {
-      return NextResponse.redirect(new URL("/doctor", request.url));
-    }
-    if (role === "PATIENT" || role === "PACIENTE")
+      const response = await fetch(`${request.nextUrl.origin}/api/auth/get-session`, {
+        headers: {
+          cookie: request.headers.get("cookie") || "",
+        },
+      });
+
+      const session = await response.json();
+
+      if (!session || !session.user)
+      {
+        if (isProtectedRoute)
+        {
+          return NextResponse.redirect(new URL("/login", request.url));
+        }
+        return NextResponse.next();
+      }
+
+      const role = session.user.role;
+
+      // Redirect from auth routes to respective dashboards
+      if (isAuthRoute)
+      {
+        if (role === "DOCTOR")
+        {
+          return NextResponse.redirect(new URL("/doctor", request.url));
+        } else
+        {
+          return NextResponse.redirect(new URL("/paciente", request.url));
+        }
+      }
+
+      // Generic dashboard redirection
+      if (pathname === "/dashboard")
+      {
+        if (role === "DOCTOR")
+        {
+          return NextResponse.redirect(new URL("/doctor", request.url));
+        } else
+        {
+          return NextResponse.redirect(new URL("/paciente", request.url));
+        }
+      }
+
+      // Role scoping
+      if (pathname.startsWith("/doctor") && role !== "DOCTOR")
+      {
+        return NextResponse.redirect(new URL("/paciente", request.url));
+      }
+
+      if (pathname.startsWith("/paciente") && role !== "PATIENT" && role !== "PACIENTE")
+      {
+        return NextResponse.redirect(new URL("/doctor", request.url));
+      }
+
+    } catch (error)
     {
-      return NextResponse.redirect(new URL("/paciente", request.url));
+      console.error("Middleware session check failed:", error);
+      // Fallback: if sesssion check fails and it's a protected route, redirect to login
+      if (isProtectedRoute)
+      {
+        return NextResponse.redirect(new URL("/login", request.url));
+      }
     }
-    return NextResponse.redirect(new URL("/", request.url));
-  }
-
-  // 3. Role-based access control
-  if (pathname.startsWith("/doctor") && role !== "DOCTOR")
-  {
-    // If a patient tries to access /doctor, redirect to their home
-    return NextResponse.redirect(new URL("/paciente", request.url));
-  }
-
-  if (pathname.startsWith("/paciente") && (role !== "PATIENT" && role !== "PACIENTE"))
-  {
-    // If a doctor tries to access /paciente, redirect to their home
-    return NextResponse.redirect(new URL("/doctor", request.url));
   }
 
   return NextResponse.next();
@@ -62,6 +97,7 @@ export const config = {
   matcher: [
     "/doctor/:path*",
     "/paciente/:path*",
+    "/dashboard",
     "/login",
     "/register",
   ],

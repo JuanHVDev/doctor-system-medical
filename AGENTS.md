@@ -20,9 +20,9 @@ npm run postinstall      # Post-install (genera Prisma)
 ```
 
 ### Testing
-El proyecto usa Vitest con configuración personalizada:
+El proyecto usa Vitest con configuración personalizada y jsdom:
 ```bash
-npm test                 # Ejecutar todos los tests
+npm test                 # Ejecutar todos los tests (watch mode)
 npm test -- --run        # Ejecutar tests una sola vez (sin watch mode)
 npm test -- ui           # Ejecutar con UI de Vitest
 npm test -- --coverage   # Ejecutar con cobertura de código
@@ -30,8 +30,17 @@ npm test -- --coverage   # Ejecutar con cobertura de código
 
 Para prueba individual:
 ```bash
-npm test -- LoginForm.test.tsx                    # Prueba específica
+npm test LoginForm.test.tsx                    # Prueba específica
 npm test -- --reporter=verbose LoginForm.test.tsx # Con output detallado
+npm test -- --run LoginForm.test.tsx          # Ejecutar prueba específica sin watch
+```
+
+Estructura de tests:
+```
+tests/
+├── ui/               # Tests de componentes de UI
+├── functional/      # Tests de utilidades y funciones
+└── setupTests.ts     # Configuración global (@testing-library/jest-dom)
 ```
 
 ## Directrices de Estilo
@@ -114,6 +123,8 @@ app/
 ├── page.tsx           # Home page
 ├── globals.css        # Tailwind + tema inline
 ├── (auth)/            # Route group auth
+├── (role)/            # Route group protegido
+├── api/               # API routes (auth, etc.)
 components/
 ├── ui/                # Shadcn/UI components
 ├── auth/              # Auth components
@@ -123,6 +134,11 @@ lib/
 ├── auth.ts            # better-auth config
 ├── prisma.ts          # Prisma client
 ├── auth-client.ts     # Client auth config
+└── stores/            # Zustand stores (auth, appointments, etc.)
+tests/
+├── ui/                # UI component tests
+├── functional/        # Utility function tests
+└── setupTests.ts      # Global test configuration
 ```
 
 ### Configuraciones Clave
@@ -130,6 +146,8 @@ lib/
 - **ESLint**: Next.js core-web-vitals + TypeScript
 - **Tailwind**: v4 con tema inline, OKLCH colors
 - **Prisma**: PostgreSQL con generated client
+- **Vitest**: jsdom environment con Testing Library
+- **Dependencies**: date-fns para fechas, sonner para notificaciones, react-day-picker para calendarios
 
 ### Seguridad
 - Validación Zod para todas las entradas
@@ -151,4 +169,7 @@ lib/
 - TypeScript estricto - evitar `any`
 - React 19 + Next.js 16 patterns
 - Crear branch nueva para cada implementación
-- Component Shadcn/UI existentes优先
+- Component Shadcn/UI existentes prioritarios
+- Tests obligatorios para nueva funcionalidad
+- Middleware Next.js para protección de rutas
+- Estado global con Zustand stores

@@ -4,10 +4,16 @@ import { headers } from "next/headers"
 import { prisma } from "@/lib/prisma"
 import { DoctorStats } from "@/components/dashboard/DoctorStats"
 import { UpcomingAppointmentsDoctor } from "@/components/dashboard/UpcomingAppointmentsDoctor"
-import { Bell, Search, Settings, HelpCircle, Activity, Users, Calendar } from "lucide-react"
+import { Bell, Search, Settings, HelpCircle, Activity, Users, Calendar, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { format, startOfDay, endOfDay } from "date-fns"
+import { es } from "date-fns/locale"
+import { Card } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { motion } from "motion/react"
+import { staggerContainer, fadeInUp } from "@/lib/animations"
+
 
 export default async function DoctorPage()
 {
@@ -121,12 +127,20 @@ export default async function DoctorPage()
         </header>
 
         {/* Dashboard Content */}
-        <main className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
+        <motion.main
+          variants={staggerContainer}
+          initial="hidden"
+          animate="show"
+          className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar"
+        >
           {/* Welcome Area */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <motion.div
+            variants={fadeInUp}
+            className="flex flex-col md:flex-row md:items-center justify-between gap-4"
+          >
             <div className="space-y-1">
               <h2 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
-                Hola, Dr. {doctor.user.fullName.split(" ")[0]} 👋
+                Hola, Dr. {doctor.user.name.split(" ")[0]} 👋
               </h2>
               <p className="text-slate-500 dark:text-slate-400 font-medium">
                 Hoy es {format(new Date(), "EEEE, d 'de' MMMM", { locale: es })}
@@ -138,103 +152,130 @@ export default async function DoctorPage()
                 Nueva Consulta
               </Button>
             </div>
-          </div>
+          </motion.div>
 
           {/* Stats Grid */}
-          <DoctorStats stats={stats} />
+          <motion.div variants={fadeInUp}>
+            <DoctorStats stats={stats} />
+          </motion.div>
 
           {/* Main Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left Column - Appointments */}
             <div className="lg:col-span-2 space-y-8">
-              <UpcomingAppointmentsDoctor appointments={serializedAppointments as any} />
+              <motion.div variants={fadeInUp}>
+                <UpcomingAppointmentsDoctor appointments={serializedAppointments as any} />
+              </motion.div>
 
               {/* Additional sections like Recent Patients or Quick Notes could go here */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card className="p-6 border-none shadow-lg bg-gradient-to-br from-blue-600 to-indigo-700 text-white">
-                  <div className="flex flex-col h-full justify-between gap-4">
-                    <div>
-                      <Calendar className="h-8 w-8 mb-4 opacity-80" />
-                      <h3 className="text-xl font-bold">Resumen de Agenda</h3>
-                      <p className="text-blue-100 text-sm mt-1">Usted tiene {pendingCount} citas próximas esta semana.</p>
+                <motion.div variants={fadeInUp}>
+                  <Card className="p-6 border-none shadow-lg bg-gradient-to-br from-blue-600 to-indigo-700 text-white cursor-pointer group overflow-hidden relative">
+                    <motion.div
+                      whileHover={{ scale: 1.1, rotate: 5 }}
+                      className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-colors"
+                    />
+                    <div className="flex flex-col h-full justify-between gap-4 relative z-10">
+                      <div>
+                        <Calendar className="h-8 w-8 mb-4 opacity-80" />
+                        <h3 className="text-xl font-bold">Resumen de Agenda</h3>
+                        <p className="text-blue-100 text-sm mt-1">Usted tiene {pendingCount} citas próximas esta semana.</p>
+                      </div>
+                      <Button variant="secondary" className="w-full bg-white/20 hover:bg-white/30 border-none text-white backdrop-blur-sm transition-colors">
+                        Ver Calendario Completo
+                      </Button>
                     </div>
-                    <Button variant="secondary" className="w-full bg-white/20 hover:bg-white/30 border-none text-white backdrop-blur-sm transition-colors">
-                      Ver Calendario Completo
-                    </Button>
-                  </div>
-                </Card>
+                  </Card>
+                </motion.div>
 
-                <Card className="p-6 border-none shadow-lg bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
-                  <div className="flex flex-col h-full justify-between gap-4">
-                    <div>
-                      <Users className="h-8 w-8 mb-4 opacity-80" />
-                      <h3 className="text-xl font-bold">Nuevos Pacientes</h3>
-                      <p className="text-emerald-500 text-sm mt-1">
-                        <span className="bg-white/90 text-emerald-600 px-2 py-0.5 rounded-full font-bold mr-1">
-                          +12%
-                        </span>
-                        <span className="text-white">este mes</span>
-                      </p>
+                <motion.div variants={fadeInUp}>
+                  <Card className="p-6 border-none shadow-lg bg-gradient-to-br from-emerald-500 to-teal-600 text-white cursor-pointer group overflow-hidden relative">
+                    <motion.div
+                      whileHover={{ scale: 1.1, rotate: -5 }}
+                      className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:bg-white/20 transition-colors"
+                    />
+                    <div className="flex flex-col h-full justify-between gap-4 relative z-10">
+                      <div>
+                        <Users className="h-8 w-8 mb-4 opacity-80" />
+                        <h3 className="text-xl font-bold">Nuevos Pacientes</h3>
+                        <p className="text-emerald-500 text-sm mt-1">
+                          <span className="bg-white/90 text-emerald-600 px-2 py-0.5 rounded-full font-bold mr-1">
+                            +12%
+                          </span>
+                          <span className="text-white">este mes</span>
+                        </p>
+                      </div>
+                      <Button variant="secondary" className="w-full bg-white/20 hover:bg-white/30 border-none text-white backdrop-blur-sm transition-colors">
+                        Ver Base de Datos
+                      </Button>
                     </div>
-                    <Button variant="secondary" className="w-full bg-white/20 hover:bg-white/30 border-none text-white backdrop-blur-sm transition-colors">
-                      Ver Base de Datos
-                    </Button>
-                  </div>
-                </Card>
+                  </Card>
+                </motion.div>
               </div>
             </div>
 
             {/* Right Column - Secondary Info */}
             <div className="space-y-8">
               {/* Quick Actions / Shortcuts */}
-              <Card className="p-6 border-none shadow-xl bg-white dark:bg-slate-900">
-                <h3 className="text-lg font-bold mb-4">Acciones Rápidas</h3>
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { label: "Prescripción", icon: Activity, color: "text-blue-500", bg: "bg-blue-50" },
-                    { label: "Resultados", icon: FileText, color: "text-purple-500", bg: "bg-purple-50" },
-                    { label: "Pacientes", icon: Users, color: "text-green-500", bg: "bg-green-50" },
-                    { label: "Soporte", icon: HelpCircle, color: "text-amber-500", bg: "bg-amber-50" },
-                  ].map((item, i) => (
-                    <button
-                      key={i}
-                      className="flex flex-col items-center justify-center p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all border border-slate-100 dark:border-slate-800 group"
-                    >
-                      <div className={`p-3 rounded-xl ${item.bg} dark:bg-slate-800 group-hover:scale-110 transition-transform`}>
-                        <item.icon className={`h-5 w-5 ${item.color}`} />
-                      </div>
-                      <span className="mt-2 text-xs font-semibold text-slate-600 dark:text-slate-400">{item.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </Card>
+              <motion.div variants={fadeInUp}>
+                <Card className="p-6 border-none shadow-xl bg-white dark:bg-slate-900">
+                  <h3 className="text-lg font-bold mb-4">Acciones Rápidas</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { label: "Prescripción", icon: Activity, color: "text-blue-500", bg: "bg-blue-50" },
+                      { label: "Resultados", icon: FileText, color: "text-purple-500", bg: "bg-purple-50" },
+                      { label: "Pacientes", icon: Users, color: "text-green-500", bg: "bg-green-50" },
+                      { label: "Soporte", icon: HelpCircle, color: "text-amber-500", bg: "bg-amber-50" },
+                    ].map((item, i) => (
+                      <motion.button
+                        key={i}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="flex flex-col items-center justify-center p-4 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all border border-slate-100 dark:border-slate-800 group"
+                      >
+                        <div className={`p-3 rounded-xl ${item.bg} dark:bg-slate-800 group-hover:scale-110 transition-transform`}>
+                          <item.icon className={`h-5 w-5 ${item.color}`} />
+                        </div>
+                        <span className="mt-2 text-xs font-semibold text-slate-600 dark:text-slate-400">{item.label}</span>
+                      </motion.button>
+                    ))}
+                  </div>
+                </Card>
+              </motion.div>
 
               {/* Today's Schedule Mini-view */}
-              <Card className="p-6 border-none shadow-xl bg-white dark:bg-slate-900 flex-1">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-bold">Estado de Horario</h3>
-                  <Badge className="bg-green-500">Activo</Badge>
-                </div>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-500">Inicio:</span>
-                    <span className="font-semibold">{doctor.startTime || "09:00"}</span>
+              <motion.div variants={fadeInUp}>
+                <Card className="p-6 border-none shadow-xl bg-white dark:bg-slate-900 flex-1">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold">Estado de Horario</h3>
+                    <Badge className="bg-green-500">Activo</Badge>
                   </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-500">Cierre:</span>
-                    <span className="font-semibold">{doctor.endTime || "17:00"}</span>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-slate-500">Inicio:</span>
+                      <span className="font-semibold">{doctor.startTime || "09:00"}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-slate-500">Cierre:</span>
+                      <span className="font-semibold">{doctor.endTime || "17:00"}</span>
+                    </div>
+                    <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full mt-4 overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: "65%" }}
+                        transition={{ duration: 1, ease: "easeOut" }}
+                        className="h-full bg-primary rounded-full"
+                      />
+                    </div>
+                    <p className="text-[10px] text-slate-400 text-center uppercase tracking-wider font-bold">
+                      65% de la jornada completada
+                    </p>
                   </div>
-                  <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full mt-4 overflow-hidden">
-                    <div className="h-full bg-primary w-2/3 rounded-full"></div>
-                  </div>
-                  <p className="text-[10px] text-slate-400 text-center uppercase tracking-wider font-bold">
-                    65% de la jornada completada
-                  </p>
-                </div>
-              </Card>
+                </Card>
+              </motion.div>
             </div>
           </div>
-        </main>
+        </motion.main>
       </div>
     </div>
   )

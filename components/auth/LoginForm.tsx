@@ -12,6 +12,8 @@ import { signIn } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
+import { toast } from "sonner";
+
 
 const loginSchema = z.object({
   email: z.string().min(1, "El correo electrónico es obligatorio").email("Formato de correo inválido"),
@@ -49,20 +51,23 @@ export default function LoginForm()
       },
       onSuccess: async () =>
       {
+        toast.success("¡Bienvenido!", {
+          description: "Has iniciado sesión correctamente.",
+        });
         form.reset();
         router.push("/");
         router.refresh();
       },
       onError: (ctx) =>
       {
-        // Better Auth normally returns generic errors, but we can customize or interpret them
-        if (ctx.error.status === 401 || ctx.error.code === "INVALID_EMAIL_OR_PASSWORD")
-        {
-          setError("Correo electrónico o contraseña incorrectos");
-        } else
-        {
-          setError(ctx.error.message || "Ocurrió un error inesperado");
-        }
+        const msg = ctx.error.status === 401 || ctx.error.code === "INVALID_EMAIL_OR_PASSWORD"
+          ? "Correo electrónico o contraseña incorrectos"
+          : (ctx.error.message || "Ocurrió un error inesperado");
+
+        setError(msg);
+        toast.error("Error de acceso", {
+          description: msg,
+        });
       }
     });
   }

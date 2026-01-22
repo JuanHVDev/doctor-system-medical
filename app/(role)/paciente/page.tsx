@@ -11,6 +11,9 @@ import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { Bell, Search, Settings, HelpCircle, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import * as motion from "motion/react-client"
+import { fadeInUp, staggerContainer } from "@/lib/animations";
+
 
 export default async function PacientePage()
 {
@@ -119,9 +122,14 @@ export default async function PacientePage()
         </div>
       </header>
 
-      <main className="container p-4 md:p-8 space-y-8 max-w-7xl mx-auto">
+      <motion.main
+        variants={staggerContainer}
+        initial="hidden"
+        animate="show"
+        className="container p-4 md:p-8 space-y-8 max-w-7xl mx-auto"
+      >
         {/* Welcome and Summary Section */}
-        <section className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <motion.section variants={fadeInUp}>
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
             <div>
               <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">
@@ -138,7 +146,7 @@ export default async function PacientePage()
             completedAppointments={completedCount}
             upcomingAppointments={upcomingAppointments.length}
           />
-        </section>
+        </motion.section>
 
         {/* Dashboard Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -146,51 +154,61 @@ export default async function PacientePage()
           {/* Main Column */}
           <div className="lg:col-span-8 space-y-8">
             {/* Quick Actions */}
-            <QuickActions />
+            <motion.div variants={fadeInUp}>
+              <QuickActions />
+            </motion.div>
 
             {/* Upcoming Appointments */}
-            <UpcomingAppointments
-              appointments={upcomingAppointments.slice(0, 3).map(app => ({
-                id: app.id,
-                startTime: app.startTime,
-                status: app.status,
-                doctor: {
-                  fullName: app.doctor.fullName,
-                  specialization: app.doctor.specialization
-                }
-              }))}
-            />
+            <motion.div variants={fadeInUp}>
+              <UpcomingAppointments
+                appointments={upcomingAppointments.slice(0, 3).map(app => ({
+                  id: app.id,
+                  startTime: app.startTime,
+                  status: app.status,
+                  doctor: {
+                    fullName: app.doctor.fullName,
+                    specialization: app.doctor.specialization
+                  }
+                }))}
+              />
+            </motion.div>
 
             {/* Recent Activity */}
-            <RecentActivity activities={activities.slice(0, 5)} />
+            <motion.div variants={fadeInUp}>
+              <RecentActivity activities={activities.slice(0, 5)} />
+            </motion.div>
           </div>
 
           {/* Sidebar Column */}
           <div className="lg:col-span-4 space-y-8">
             {/* Health Indicators */}
-            <HealthSummary
-              bloodType={patientData.bloodType}
-              weight={patientData.weight}
-              height={patientData.height}
-            />
+            <motion.div variants={fadeInUp}>
+              <HealthSummary
+                bloodType={patientData.bloodType}
+                weight={patientData.weight}
+                height={patientData.height}
+              />
+            </motion.div>
 
             {/* Personal Profile Summary */}
-            <PatientProfile
-              patient={{
-                fullName: patientData.fullName,
-                email: session.user.email,
-                image: session.user.image,
-                gender: patientData.gender,
-                bloodType: patientData.bloodType,
-                phoneNumber: patientData.phoneNumber,
-                address: patientData.address,
-                city: patientData.city,
-                dateOfBirth: patientData.dateOfBirth
-              }}
-            />
+            <motion.div variants={fadeInUp}>
+              <PatientProfile
+                patient={{
+                  fullName: patientData.fullName,
+                  email: session.user.email,
+                  image: session.user.image,
+                  gender: patientData.gender,
+                  bloodType: patientData.bloodType,
+                  phoneNumber: patientData.phoneNumber,
+                  address: patientData.address,
+                  city: patientData.city,
+                  dateOfBirth: patientData.dateOfBirth
+                }}
+              />
+            </motion.div>
           </div>
         </div>
-      </main>
+      </motion.main>
     </div>
   );
 }

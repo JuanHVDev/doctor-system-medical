@@ -93,3 +93,39 @@ export const fadeInDown: Variants = {
     },
   },
 }
+
+export const hoverScale: Variants = {
+  hover: {
+    scale: 1.02,
+    transition: {
+      duration: 0.2,
+      ease: "easeInOut",
+    },
+  },
+  tap: {
+    scale: 0.98,
+  },
+}
+
+export const listItem: Variants = {
+  hidden: { opacity: 0, x: -20 },
+  show: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      duration: 0.4,
+      ease: "easeOut",
+    },
+  },
+}
+
+export const cardHover: Variants = {
+  hover: {
+    y: -5,
+    boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
+    transition: {
+      duration: 0.2,
+      ease: "easeInOut",
+    },
+  },
+}

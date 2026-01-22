@@ -134,7 +134,7 @@ lib/
 ├── auth.ts            # better-auth config
 ├── prisma.ts          # Prisma client
 ├── auth-client.ts     # Client auth config
-└── stores/            # Zustand stores (auth, appointments, etc.)
+└── data/              # Data utilities (specialties, etc.)
 tests/
 ├── ui/                # UI component tests
 ├── functional/        # Utility function tests
